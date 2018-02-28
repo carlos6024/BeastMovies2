@@ -23,17 +23,20 @@ public class LiveMovieService extends BaseLiveService {
     }
 
     @Subscribe
-    public void getMovieMessage(MovieServices.SearchMoviesRequest request) {
+    public void getMovieMessage(final MovieServices.SearchMoviesRequest request) {
         final MovieServices.SearchMoviesResponse Movieresponse = new MovieServices.SearchMoviesResponse();
         Movieresponse.movies = new ArrayList<>();
-        Call<ParentModel> call = api.loadMovies(request.query,BeastMoviesApplication.API_KEY);
+        Call<ParentModel> call = api.loadMovies(request.query, BeastMoviesApplication.API_KEY);
         call.enqueue(new Callback<ParentModel>() {
             @Override
             public void onResponse(Call<ParentModel> call, Response<ParentModel> response) {
-                for(MovieModel movieModel:response.body().movieInfos){
-                    Movieresponse.movies.add(new Movie(movieModel.getMovieTitle(),
-                            movieModel.getMovieSummary(),BeastMoviesApplication.BASE_PICTURE_URL+movieModel.getMoviePoster(),
-                            movieModel.getMovieRelaseDate(),movieModel.getMovieAverage()));
+                ParentModel parentModel = response.body();
+                if (parentModel != null) {
+                    for (MovieModel movieModel : parentModel.movieInfos) {
+                        Movieresponse.movies.add(new Movie(movieModel.getMovieTitle(),
+                                movieModel.getMovieSummary(), BeastMoviesApplication.BASE_PICTURE_URL + movieModel.getMoviePoster(),
+                                movieModel.getMovieRelaseDate(), movieModel.getMovieAverage()));
+                    }
                 }
                 bus.post(Movieresponse);
             }
